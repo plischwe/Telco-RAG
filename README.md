@@ -32,7 +32,7 @@ cd telco-rag
 ### Prerequisites
 
 - Python 3.11
-- Node.js
+- Node.js (npm version 10.8.2 and node version 20.17.0 are validated, please use install instructions here if you're versions are different: https://linuxize.com/post/how-to-install-node-js-on-ubuntu-22-04/)
 
 Other dependencies are listed in `requirements.txt`.
 
@@ -45,6 +45,12 @@ cd ./Telco-RAG_api
 pip install -r requirements.txt
 python setup.py
 ```
+
+### Get access to llama2-7b
+
+Follow initial steps to create HF token and gain access to gated llama repo: https://medium.com/@lucnguyen_61589/llama-2-using-huggingface-part-1-3a29fdbaa9ed
+
+Use HF cli to login: https://huggingface.co/docs/huggingface_hub/en/guides/cli 
 
 ### Running the Full Pipeline
 
