@@ -1,4 +1,4 @@
-# Telco-RAG: Retrieval-Augmented Generation for Telecommunications
+# Telco-RAG: Retrieval-Augmented Generation for Telecommunications (on device inference)
 
 **Telco-RAG** is a specialized Retrieval-Augmented Generation (RAG) framework designed to address the unique challenges of the telecommunications industry, particularly in handling the complexity and rapid evolution of 3GPP documents.
 
