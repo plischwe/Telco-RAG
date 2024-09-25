@@ -7,37 +7,24 @@ interface SearchProps {
   onDone: (done: boolean) => void;
 }
 
-const modelDescriptions = {
-  "gpt-4o-mini": "gpt-4o-mini: Performed <score> accuracy on TeleQnA.",
-  "gpt-4": "GPT-4: Performed <score> accuracy on TeleQnA.",
-  "gpt-4o": "GPT-4o: Performed <score> accuracy on TeleQnA.",
-};
-
-const modelPlaceholders = {
-  "gpt-4o-mini": "Enter your OpenAI key for gpt-4o-mini",
-  "gpt-4": "Enter your OpenAI key for GPT-4",
-  "gpt-4o": "Enter your OpenAI key for GPT-4o",
-};
-
 export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("gpt-4o-mini");
+  const [model, setModel] = useState("gpt-4o-mini"); // Assuming you still want to select models
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSearch = async () => {
-    if (!query || !apiKey) {
-      setError("Please enter a valid query and API key.");
+    if (!query) {
+      setError("Please enter a valid query.");
       return;
     }
     setLoading(true);
     try {
-      await handleStream(query, model, apiKey);
+      await handleStream(query, model);
     } catch (error) {
-      console.error("Failed to send the query:", error);
+      console.error("Failed to process the query:", error);
       setLoading(false);
     }
   };
@@ -49,10 +36,6 @@ export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) =>
   };
 
   useEffect(() => {
-    const storedApiKey = localStorage.getItem("OPENAI_KEY");
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-    }
     const storedModel = localStorage.getItem("SELECTED_MODEL");
     if (storedModel) {
       setModel(storedModel);
@@ -64,7 +47,7 @@ export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) =>
     setShowSettings(!showSettings);
   };
 
-  const handleStream = async (query: string, model: string, apiKey: string) => {
+  const handleStream = async (query: string, model: string) => {
     setLoading(true);
     try {
       const response = await fetch("http://localhost:8000/process_query/", {
@@ -72,7 +55,7 @@ export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) =>
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query, model_name: model, api_key: apiKey }),
+        body: JSON.stringify({ query, model_name: model }),
       });
 
       if (!response.ok) {
@@ -94,17 +77,15 @@ export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) =>
     }
   };
 
+
   const handleSave = () => {
-    localStorage.setItem("OPENAI_KEY", apiKey);
     localStorage.setItem("SELECTED_MODEL", model);
     setShowSettings(false);
     inputRef.current?.focus();
   };
 
   const handleClear = () => {
-    localStorage.removeItem("OPENAI_KEY");
     localStorage.removeItem("SELECTED_MODEL");
-    setApiKey("");
     setModel("gpt-4o-mini");
   };
 
@@ -158,19 +139,6 @@ export const Search: FC<SearchProps> = ({ onSearch, onAnswerUpdate, onDone }) =>
             <option value="gpt-4o">gpt-4o</option>
             {/* Add more models as needed */}
           </select>
-
-          <p className="text-center text-xs text-[#D4D4D8]">{modelDescriptions[model]}</p>
-
-          <input
-            type="password"
-            className="w-full rounded-md border border-gray-300 p-2 text-lg text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value);
-              setError("");
-            }}
-            placeholder={modelPlaceholders[model]}
-          />
 
           <div className="flex space-x-2">
             <button

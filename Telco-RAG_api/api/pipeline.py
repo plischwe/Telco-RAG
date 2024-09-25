@@ -18,16 +18,16 @@ if not os.path.exists(clone_directory):
 else:
     print("Folder already exists. Skipping cloning.")
 
-async def TelcoRAG(query, model_name='gpt-4o-mini', api_key= None):
-    if api_key == None:
-        try:
-            from api.settings.config import get_settings
-            settings = get_settings()
-            api_key = settings.openai__api_key
-        except:
-            sys.exit("You do not have an OpenAI api key stored.")
+async def TelcoRAG(query, model_name='llama7b-ipex-int4'):
+    #if api_key == None:
+        #try:
+     #       from api.settings.config import get_settings
+         #   settings = get_settings()
+     #       api_key = settings.openai__api_key
+     #   except:
+     #       sys.exit("You do not have an OpenAI api key stored.")
     try:
-        update_secrets_file(model_name, api_key)
+    #    update_secrets_file(model_name, api_key)
         start =  time.time()
         question = Query(query, [])
 

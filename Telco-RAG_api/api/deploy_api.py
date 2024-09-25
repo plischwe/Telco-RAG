@@ -3,10 +3,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import json
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from api.pipeline import TelcoRAG 
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get('/')
+def hello_world():
+    return{'hello':'world'}
+
+@app.get('/favicon.ico')
+async def favicon():
+    file_name = "favicon.ico"
+    file_path = os.path.join(app.root_path, "static", file_name)
+    return FileResponse(path=file_path, headers={"Content-Disposition": "attachment; filename=" + file_name})
 
 # Setup CORS policy for the application
 app.add_middleware(
@@ -20,7 +37,6 @@ app.add_middleware(
 class QueryData(BaseModel):
     query: str
     model_name: str
-    api_key: str
 
 @app.post("/process_query/")
 async def process_query(data: QueryData):
@@ -28,8 +44,9 @@ async def process_query(data: QueryData):
     try:
         os.environ["KMP_DUPLICATE_LIB_OK"] = 'TRUE'
         
+        print("Here is data server recieved: ", data)
         # Generate response using the TelcoRAG model
-        response, retrieval, query = await TelcoRAG(query= data.query, model_name= data.model_name, api_key= data.api_key)
+        response, retrieval, query = await TelcoRAG(query= data.query, model_name= data.model_name)
 
         return json.dumps({"result": response, "retrieval": retrieval, "query": query})
     except Exception as e:

@@ -27,7 +27,7 @@ class Query:
         self.wg = []
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = NNRouter()
-        self.model.load_state_dict(torch.load(r'.\\src\\resources\\router_new.pth', map_location='cpu'))
+        self.model.load_state_dict(torch.load(r'src/resources/router_new.pth', map_location='cpu'))
         self.model.to(self.device)
         self.model.eval()
         self.original_labels_mapping = np.arange(21, 39)
