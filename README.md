@@ -48,7 +48,7 @@ python setup.py
 
 ### Running the Full Pipeline
 
-To run the full pipeline, use the following commands:
+To run the full pipeline, open the first terminal window and execute the following commands:
 
 ```bash
 npm install
@@ -57,11 +57,9 @@ npm run dev
 
 This will open two terminals: one for the frontend and one for the Telco-RAG backend. You can access the frontend via your browser at `http://localhost:3000/`.
 
-On your first connection, ensure to specify a valid OpenAI API key in the settings.
-
 ### Running Only the API Server
 
-If you only want to run the API server, use this command:
+Open a second terminal window and run the API server using this command:
 
 ```bash
 cd ./Telco-RAG_api
