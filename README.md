@@ -1,4 +1,4 @@
-# Telco-RAG: Retrieval-Augmented Generation for Telecommunications
+# Telco-RAG: Retrieval-Augmented Generation for Telecommunications (on device inference)
 
 **Telco-RAG** is a specialized Retrieval-Augmented Generation (RAG) framework designed to address the unique challenges of the telecommunications industry, particularly in handling the complexity and rapid evolution of 3GPP documents.
 
@@ -32,7 +32,7 @@ cd telco-rag
 ### Prerequisites
 
 - Python 3.11
-- Node.js
+- Node.js (npm version 10.8.2 and node version 20.17.0 are validated, please use install instructions here if you're versions are different: https://linuxize.com/post/how-to-install-node-js-on-ubuntu-22-04/)
 
 Other dependencies are listed in `requirements.txt`.
 
@@ -46,9 +46,15 @@ pip install -r requirements.txt
 python setup.py
 ```
 
+### Get access to llama2-7b
+
+Follow initial steps to create HF token and gain access to gated llama repo: https://medium.com/@lucnguyen_61589/llama-2-using-huggingface-part-1-3a29fdbaa9ed
+
+Use HF cli to login: https://huggingface.co/docs/huggingface_hub/en/guides/cli 
+
 ### Running the Full Pipeline
 
-To run the full pipeline, use the following commands:
+To run the full pipeline, open the first terminal window and execute the following commands:
 
 ```bash
 npm install
@@ -57,11 +63,9 @@ npm run dev
 
 This will open two terminals: one for the frontend and one for the Telco-RAG backend. You can access the frontend via your browser at `http://localhost:3000/`.
 
-On your first connection, ensure to specify a valid OpenAI API key in the settings.
-
 ### Running Only the API Server
 
-If you only want to run the API server, use this command:
+Open a second terminal window and run the API server using this command:
 
 ```bash
 cd ./Telco-RAG_api
