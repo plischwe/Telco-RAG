@@ -23,7 +23,7 @@ def get_query_embedding_OpenAILarge(query_text, context=None):
             query_text = f'{query_text}\n' + "\n".join(context)
 
         response = embedding(query_text)
-        query_embedding =  response.data[0].embedding  
+        query_embedding =  response[0]  
         return np.array(query_embedding, dtype=np.float32)
     except Exception as e:
         print(f"Error occurred in get_query_embedding_OpenAILarge: {e}")

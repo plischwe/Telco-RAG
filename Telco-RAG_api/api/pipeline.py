@@ -18,7 +18,7 @@ if not os.path.exists(clone_directory):
 else:
     print("Folder already exists. Skipping cloning.")
 
-async def TelcoRAG(query, model_name='llama7b-ipex-int4'):
+async def TelcoRAG(query, model_name='meta-llama/Llama-2-7b-chat-hf'):
     #if api_key == None:
         #try:
      #       from api.settings.config import get_settings
@@ -43,11 +43,11 @@ async def TelcoRAG(query, model_name='llama7b-ipex-int4'):
         # question.question = concisequery
 
         question.def_TA_question()
-        print()
-        print('#'*50)
-        print(concisequery)
-        print('#'*50)
-        print()
+        #print()
+        #print('#'*50)
+        #print(concisequery)
+        #print('#'*50)
+        #print()
 
         try:
             loop = asyncio.get_event_loop()

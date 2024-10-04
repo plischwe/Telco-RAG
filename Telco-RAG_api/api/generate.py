@@ -15,7 +15,7 @@ Please answer the following question:
 Considering the following context:
 {content}
 
-Please answer the following question, add between paranthesis the retrieval(e.g. Retrieval 3) that you used for each eleement of your reasoning:
+Please answer the following question, add between parenthesis the retrieval(e.g. Retrieval 3) that you used for each element of your reasoning:
 {question.question}
         """
         print(prompt)

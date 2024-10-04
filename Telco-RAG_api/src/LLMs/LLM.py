@@ -184,17 +184,19 @@ async def a_submit_prompt_flex(prompt, model="gpt-3.5", output_json=False):
         #output_str = tokenizer.decode(output[0], skip_special_tokens=True)    
     return output
 
+def average_pool(last_hidden_states: Tensor,
+                 attention_mask: Tensor) -> Tensor:
+    last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
+    return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
+
 def embedding(input, dimension=1024):
-#    client = openai.OpenAI(api_key=openai.api_key)
-#    response = client.embeddings.create(
-#                    input=input,
-#                    model="text-embedding-3-large",
-#                    dimensions=dimension,
-#                )
+    #print(f"Input to the embedding function: {input}")
     tokenizer = AutoTokenizer.from_pretrained("thenlper/gte-large")
     model = AutoModel.from_pretrained("thenlper/gte-large")
-    # Tokenize the input texts
     tokens = tokenizer(input, max_length=512, padding=True, truncation=True, return_tensors='pt')
     response = model(**tokens)
+    embeddings = average_pool(response.last_hidden_state, tokens['attention_mask'])
+    embeddings_list = embeddings.tolist()
+    #print(f"Response from custom embedding model (should be list of vectors): {embeddings_list}")
 
-    return response
+    return embeddings_list

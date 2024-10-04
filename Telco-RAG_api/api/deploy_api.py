@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from api.pipeline import TelcoRAG 
+from .model_loader import ModelLoader
 
 app = FastAPI()
 
@@ -24,6 +25,12 @@ async def favicon():
     file_name = "favicon.ico"
     file_path = os.path.join(app.root_path, "static", file_name)
     return FileResponse(path=file_path, headers={"Content-Disposition": "attachment; filename=" + file_name})
+
+#Load model on startup
+@app.on_event("startup")
+async def load_model_on_startup():
+    model_name = 'meta-llama/Llama-2-7b-chat-hf'
+    ModelLoader.load_model(model_name)
 
 # Setup CORS policy for the application
 app.add_middleware(

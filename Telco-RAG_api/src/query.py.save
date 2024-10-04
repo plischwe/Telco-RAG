@@ -77,6 +77,7 @@ class Query:
             #print("COL2 FILE EXISTS!!!!!")
             with open(file_path, 'r') as file:
                 series_dict = json.load(file)
+            print("Series Dictionary: {series_dict}")
         else:
             topics_with_series = [
                 ("Requirements (21 series): Focuses on the overarching requirements necessary for UMTS (Universal Mobile Telecommunications System) and later cellular standards, including GSM enhancements, security standards, and the general evolution of 3GPP systems.", "21 series"),
@@ -99,16 +100,14 @@ class Query:
                 ("Radio technology beyond LTE (38 series): Focuses on the development and specification of radio technologies that extend beyond the capabilities of LTE, aiming to improve speed, efficiency, and functionality for future cellular networks.", "38 series")
             ]
             series_dict = {index: {"description": desc, "embeddings": Query.get_embeddings(desc)} for desc, index in topics_with_series}
+            print("Series Dictionary: {series_dict}")
             with open(file_path, 'w') as file:
                 json.dump(series_dict, file, indent=4)
-
-        #print(f"Series dict (should contain precomputed 3gpp embeddings: {series_dict}")        
+        
         similarity_column = []
         for embeddings in embeddings_list:
-            #print(f"Looping through and not at Embedding: {embeddings}")
             coef = [Query.inner_product(embeddings, series_dict[series_id]['embeddings']) for series_id in series_dict]
             similarity_column.append(coef)
-        #print(f"Similarity column in get_col2 function: {similarity_column}")
         return similarity_column
     
     @staticmethod
@@ -116,7 +115,7 @@ class Query:
         print("In preprocessing_softmax!!!!!!")
         embeddings = np.array(embeddings_list)
         similarity = np.array(Query.get_col2(embeddings))
-        #print("Embeddings AND Similarities: {embeddings} AND {similarity}")
+        print("Embeddings AND Similarities: {embeddings} AND {similarity}")
         X_train_1_tensor = torch.tensor(embeddings, dtype=torch.float32)
         X_train_2_tensor = torch.nn.functional.softmax(10 * torch.tensor(similarity, dtype=torch.float32), dim=-1)
         print(f"******* softmax: X_train 1: {X_train_1_tensor}")
@@ -127,18 +126,18 @@ class Query:
     @staticmethod
     def get_embeddings(text):
         response = embedding(text)
-        #print(f"Response in get_embeddings: {response[0]}")
+        print(f"Response in get_embeddings: {response[0]}")
         return response[0]
 
     def predict_wg(self):
-        #print(f"Enhanced query in predict_wg: {self.enhanced_query} END OF ENHANCED QUERY")
+        print(f"Enhanced query in predict_wg: {self.enhanced_query} END OF ENHANCED QUERY")
         text_embeddings = Query.get_embeddings_list([self.enhanced_query])
         embeddings = text_embeddings[self.enhanced_query]
         num_embs = len(embeddings)
-        #print(f"Length of embeddings in predict_wg: {num_embs}")
-        test_dataloader = Query.preprocessing_softmax([embeddings])
+        print(f"Length of embeddings in predict_wg: {num_embs}")
+        test_dataloader = Query.preprocessing_softmax(embeddings)
         label_list = []
-        #print(f"******************* test_dataloader in predict_wg: {test_dataloader}")
+        print(f"******************* test_dataloader in predict_wg: {test_dataloader}")
         with torch.no_grad():
             for X1, X2 in test_dataloader:
                 X1, X2 = X1.to(self.device), X2.to(self.device)
@@ -146,6 +145,7 @@ class Query:
                 _, top_indices = outputs.topk(5, dim=1)
                 predicted_labels = self.original_labels_mapping[top_indices.cpu().numpy()]
                 label_list = predicted_labels
+                print("Done with inference in predict_wg")
 
         self.wg = label_list[0]
         print("Done with predict_wg")
@@ -175,20 +175,13 @@ class Query:
         num_docs = len(document_ds)
         print(f"Number of docs from get_documents: {num_docs}")
         Document_ds = [chunk_doc(doc) for doc in document_ds]
-        #print("*******Document_ds in get_3GPP_context: ", Document_ds)
         series_doc = {'Summaries': []}
         for series_number in self.wg:
             series_doc[f'Series{series_number}'] = [doc for doc in Document_ds if doc[0]['source'][:2].isnumeric() and int(doc[0]['source'][:2]) == series_number]
         series_doc['Summaries'] = [doc for doc in Document_ds if not doc[0]['source'][:2].isnumeric()]
         
-        #print(f"**********Series_doc (get_3GPP_context): {series_doc}")
-#        print("Here!!")
- #       print("*************series_doc: ", series_doc)
         series_docs = get_embeddings(series_doc)
-  #      print("*************Series_docs: ", series_docs)
         embedded_docs = [serie for serie in series_docs.values()]
-        print(f"*****Type and length of input to faiss: {type(embedded_docs)} and {len(embedded_docs)}")
-        #print(f"Batch passed into get_question_context_faiss: {embeded_docs}")
         self.get_question_context_faiss(batch=embedded_docs, k=10, use_context=False)
         self.candidate_answers(model_name=model_name, UI_flag=UI_flag)
 

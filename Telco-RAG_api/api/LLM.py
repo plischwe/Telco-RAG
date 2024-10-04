@@ -1,6 +1,8 @@
 import openai
 import tiktoken
 
+from .model_loader import ModelLoader
+
 import asyncio
 
 import anthropic # type: ignore
@@ -14,7 +16,7 @@ import time
 
 from api.settings.config import get_settings
 from groq import Groq, AsyncGroq
-from ipex_llm.optimize import low_memory_init, load_low_bit
+#from ipex_llm.optimize import low_memory_init, load_low_bit
 from transformers import LlamaTokenizer
 import torch
 import torch.nn.functional as F
@@ -112,87 +114,23 @@ token_prices = {
     "mistral-medium": 5 / 1000000,
 }
 
-
-#class RateLimiter:
-#    def __init__(self, calls_per_second=0.25):
-#        self.calls_per_second = rate_limit
-#        self.semaphore = asyncio.Semaphore(calls_per_second)
-#        self.next_call_time = time.time()
-
-#    async def wait_for_rate_limit(self):
-#        async with self.semaphore:
-#            now = time.time()
-#            sleep_time = self.next_call_time - now
-#            self.next_call_time = max(self.next_call_time + 1 / self.calls_per_second, now)
-#            if sleep_time > 0:
-#                await asyncio.sleep(sleep_time)
-#            self.next_call_time = max(self.next_call_time + 1 / self.calls_per_second, now)
-
-
-def submit_prompt_flex_UI(prompt, model="llama7b-ipex-int4"):
-    # Load tokenizer
-    #tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf", trust_remote_code=True)
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
-    model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
+def submit_prompt_flex_UI(prompt, model="meta-llama/Llama-2-7b-chat-hf"):
+    #Load model and tokenizer
+    loaded_model, tokenizer = ModelLoader.load_model(model)    
     inputs = tokenizer(prompt, return_tensors="pt", return_attention_mask=False)
-    outputs = model.generate(**inputs, max_length=300)
-    text = tokenizer.batch_decode(outputs)[0]
-    #saved_dir = '/home/intel-admin/plischwe/llama-2-ipex-llm-4-bit'
-    #with low_memory_init(): # Fast and low cost by loading model on meta device
-    #    model = AutoModelForCausalLM.from_pretrained(saved_dir,
-    #                                      torch_dtype="auto",
-    #                                      trust_remote_code=True)
-    #model = load_low_bit(model, saved_dir) # Load the optimized model
+    with torch.no_grad():
+        outputs = loaded_model.generate(**inputs, max_length=300)
+    generated_text = tokenizer.batch_decode(outputs)[0]
+    return generated_text
 
-    #LLAMA2_PROMPT_FORMAT = """
-    #INST] <<SYS>>
-    #You are a helpful assistant.
-    #<</SYS>>
-    #{prompt}[/INST]
-    #"""
-    # Generate predicted tokens
-    #with torch.inference_mode():
-    #    prompt = LLAMA2_PROMPT_FORMAT.format(prompt=prompt)
-    #    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
-    #    output = model.generate(input_ids,
-    #                            max_new_tokens=150)
-    #    output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-    #return output_str    
-    return text
-
-async def a_submit_prompt_flex_UI(prompt, model="gpt-3.5", output_json=False):
-    # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf", trust_remote_code=True)
-
-    saved_dir = '/home/intel-admin/plischwe/llama-2-ipex-llm-4-bit'
-    with low_memory_init(): # Fast and low cost by loading model on meta device
-        model = AutoModelForCausalLM.from_pretrained(saved_dir,
-                                          torch_dtype="auto",
-                                          trust_remote_code=True)
-    model = load_low_bit(model, saved_dir) # Load the optimized model
-
-    LLAMA2_PROMPT_FORMAT = """
-    [INST] <<SYS>>
-    You are a helpful assistant.
-    <</SYS>>
-    {prompt}[/INST]
-    """
-    # Generate predicted tokens
-    with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
-        output = model.generate(input_ids,
-                                max_new_tokens=150)
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-    return output_str
+async def a_submit_prompt_flex_UI(prompt, model="meta-llama/Llama-2-7b-chat-hf"):
+    #Load model and tokenizer
+    loaded_model, tokenizer = ModelLoader.load_model(model)    
+    inputs = tokenizer(prompt, return_tensors="pt", return_attention_mask=False)
+    with torch.no_grad():
+        outputs = loaded_model.generate(**inputs, max_length=300)
+    generated_text = tokenizer.batch_decode(outputs)[0]
+    return generated_text
 
 def average_pool(last_hidden_states: Tensor,
                  attention_mask: Tensor) -> Tensor:

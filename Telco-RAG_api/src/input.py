@@ -14,9 +14,10 @@ def read_docx(file_path):
         logging.error(f"Failed to read DOCX file at {file_path}: {e}")
         return None
 
-def get_documents(series_list, folder_path=r'.\\3GPP-Release18\\Documents', storage_name='Documents.db', dataset_name="Standard"):
+def get_documents(series_list, folder_path='3GPP-Release18/Documents', storage_name='Documents.db', dataset_name="Standard"):
     """Retrieve and process documents from a folder, storing them in a database if not already present."""
-    storage = Storage(fr'.\\3GPP-Release18\{storage_name}')
+    print("Inside 'get_documents' function that creates embeddings")
+    storage = Storage(f"/home/intel-admin/plischwe/Telco-RAG/Telco-RAG_api/3GPP-Release18/{storage_name}")
     storage.create_dataset(dataset_name)
     
     document_ds = []
